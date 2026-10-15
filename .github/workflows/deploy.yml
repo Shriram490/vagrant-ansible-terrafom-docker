@@ -18,6 +18,25 @@ jobs:
         with:
           terraform_version: 1.6.6
           terraform_wrapper: false
+      - name: Diagnose Docker access
+        working-directory: Iac-deployment
+        run: |
+          echo "===== Current user ====="
+          whoami
+          id
+
+          echo "===== Docker socket ====="
+          ls -l /var/run/docker.sock
+
+          echo "===== Docker environment ====="
+          env | grep -E '^(DOCKER_HOST|DOCKER_CONTEXT)=' || true
+
+          echo "===== Docker API ping ====="
+          curl --unix-socket /var/run/docker.sock http://localhost/_ping
+          echo
+
+          echo "===== Docker CLI ====="
+          docker ps
 
       - name: Init Terraform
         working-directory: Iac-deployment
@@ -29,4 +48,5 @@ jobs:
 
       - name: Run Terraform apply
         working-directory: Iac-deployment
+      
         run: terraform apply -auto-approve
